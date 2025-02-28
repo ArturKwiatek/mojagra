@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gra Wyborcza</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; margin: 0; overflow: hidden; }
+        canvas { background: url('drukarnia.jpg') no-repeat center center/cover; display: block; margin: auto; max-width: 100%; height: auto; }
+        .popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border: 2px solid black; }
+        .controls { margin-top: 10px; position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); }
+        .controls button { font-size: 20px; padding: 10px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Poprowadź bohaterkę do celu!</h1>
+    <canvas id="gameCanvas" width="500" height="350"></canvas>
+    
+    <div class="controls">
+        <button onclick="movePlayer('up')">⬆️</button><br>
+        <button onclick="movePlayer('left')">⬅️</button>
+        <button onclick="movePlayer('right')">➡️</button><br>
+        <button onclick="movePlayer('down')">⬇️</button>
+    </div>
+    
+    <div id="popup" class="popup">
+        <p id="popupText"></p>
+        <button onclick="closePopup()">OK</button>
+    </div>
+    
+    <script>
+        let canvas = document.getElementById("gameCanvas");
+        let ctx = canvas.getContext("2d");
+        
+        let playerImg = new Image();
+        playerImg.src = 'bohaterka.png'; // Wgraj obraz bohaterki - kobieta w żółtym kasku
+        
+        let player = { x: 50, y: 50, size: 40 };
+        let goals = [
+            { x: 150, y: 100, type: "księga", text: "Członek rady nadzorczej nadzoruje zarząd, analizuje finanse i strategiczne decyzje. Nie załatwia pracownikom podwyżek, ale dba o stabilność firmy." },
+            { x: 250, y: 180, type: "film", text: "Odtwarzam film...", video: "twoj_film.mp4" },
+            { x: 350, y: 250, type: "tekst", text: "Proszę o Twój głos! Razem zadbamy o firmę!" }
+        ];
+        
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(playerImg, player.x, player.y, player.size, player.size);
+            
+            goals.forEach(goal => {
+                ctx.fillStyle = goal.type === "księga" ? "brown" : goal.type === "film" ? "red" : "green";
+                ctx.fillRect(goal.x, goal.y, 30, 30);
+            });
+        }
+        
+        function checkCollisions() {
+            goals.forEach(goal => {
+                if (player.x < goal.x + 30 && player.x + player.size > goal.x && player.y < goal.y + 30 && player.y + player.size > goal.y) {
+                    showPopup(goal.text, goal.video);
+                    goals.shift(); 
+                }
+            });
+        }
+        
+        function showPopup(text, video) {
+            let popup = document.getElementById("popup");
+            let popupText = document.getElementById("popupText");
+            
+            if (video) {
+                popupText.innerHTML = `<video width='300' controls><source src='${video}' type='video/mp4'></video>`;
+            } else {
+                popupText.textContent = text;
+            }
+            popup.style.display = "block";
+        }
+        
+        function closePopup() {
+            document.getElementById("popup").style.display = "none";
+        }
+        
+        function movePlayer(direction) {
+            if (direction === "up") player.y -= 20;
+            if (direction === "down") player.y += 20;
+            if (direction === "left") player.x -= 20;
+            if (direction === "right") player.x += 20;
+            drawGame();
+            checkCollisions();
+        }
+        
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowUp") movePlayer("up");
+            if (e.key === "ArrowDown") movePlayer("down");
+            if (e.key === "ArrowLeft") movePlayer("left");
+            if (e.key === "ArrowRight") movePlayer("right");
+        });
+        
+        drawGame();
+    </script>
+</body>
+</html>
